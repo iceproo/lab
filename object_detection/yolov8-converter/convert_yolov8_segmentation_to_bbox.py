@@ -9,6 +9,7 @@ def seg_to_bbox(seg_str):
     class_id, *points = seg_str.split()
     points = [float(p) for p in points]
     x_min, y_min, x_max, y_max = min(points[0::2]), min(points[1::2]), max(points[0::2]), max(points[1::2])
+    # Calculate bbox center, width, height
     bw = x_max - x_min
     bh = y_max - y_min
     x_c = x_min + bw / 2
@@ -136,6 +137,18 @@ def visualize_bboxes_on_img(image_path, label_path, img_save_path, color=(0, 255
     plt.savefig(img_save_path, bbox_inches="tight", pad_inches=0)
     plt.close()
 
+def get_sample_files(yolov8_segmentation_folder, index): 
+
+    # print example of image and label file
+    example_label = os.listdir(os.path.join(yolov8_segmentation_folder, "train", "labels"))[index]
+    img_base_name = example_label.replace('.txt', '')
+    img_file_name = img_base_name + '.jpg' # assuming images are in .jpg format
+
+    img_file_to_print = os.path.join(yolov8_segmentation_folder, "train", "images", img_file_name)
+    label_file_to_print = os.path.join(yolov8_segmentation_folder, "train", "labels", example_label)
+
+    return img_file_to_print, label_file_to_print
+
 def convert_yolov8_seg_to_bbox(yolov8_segmentation_folder):
     """
     Converts YOLOv8 segmentation labels to bounding box labels in place.
@@ -154,14 +167,14 @@ def convert_yolov8_seg_to_bbox(yolov8_segmentation_folder):
 
     Does this in place, overwriting original segmentation labels.   
     """
-    for folder_img_category in ["train"]:#, "valid", "test"]:
+    for folder_img_category in ["train", "valid", "test"]:
         if not os.path.exists(os.path.join(yolov8_segmentation_folder, folder_img_category)):
             print(f"Folder '{folder_img_category}' does not exist in the provided path.")
             continue
         
         cur_dir = os.path.join(yolov8_segmentation_folder, folder_img_category, "labels")
         print(f"Processing labels in {cur_dir}")
-        for file in os.listdir(cur_dir)[8:10]: # For testing
+        for file in os.listdir(cur_dir): 
 
             if file.endswith('.txt'):
                 with open(os.path.join(cur_dir, file), 'r') as f:
@@ -176,26 +189,10 @@ def convert_yolov8_seg_to_bbox(yolov8_segmentation_folder):
         print(f"Converted segmentation labels to bounding box labels in {cur_dir}")
 
 if __name__ == "__main__":
-    test = False  # Set to False to skip test visualization
-    if test:
-        bbox = seg_to_bbox("1 0.45072115384615385 0.49158653846153844 0.027644230769230768 0.10697115384615384")
-        print(f"Example bbox 1st: {bbox}")
-        visualize_bboxes_on_img(
-            "/home/c21/c21ion/edu/exjobb/lab/yolonas/pennor_darkmark_org/20251002_095525_mp4-0007_jpg.rf.8e12088e377b29ebd4f3c2e430b1b5bb.jpg",
-            "/home/c21/c21ion/edu/exjobb/lab/yolonas/pennor_darkmark_org/20251002_095525_mp4-0007_jpg.rf.8e12088e377b29ebd4f3c2e430b1b5bb.txt",
-            "bbox_example.png"
-        )
-        exit(0)
     
     yolov8_segmentation_folder = input("Enter the path to the YOLOv8 segmentation folder: ")
 
-    # print example of image and label file
-    example_label = os.listdir(os.path.join(yolov8_segmentation_folder, "train", "labels"))[9]
-    img_base_name = example_label.replace('.txt', '')
-    img_file_name = img_base_name + '.jpg' # assuming images are in .jpg format
-
-    img_file_to_print = os.path.join(yolov8_segmentation_folder, "train", "images", img_file_name)
-    label_file_to_print = os.path.join(yolov8_segmentation_folder, "train", "labels", example_label)
+    img_file_to_print, label_file_to_print = get_sample_files(yolov8_segmentation_folder, index=2)
 
     # Print segmentation mask on image
     visualize_segmentation_on_image(
@@ -210,7 +207,15 @@ if __name__ == "__main__":
     visualize_bboxes_on_img(
         img_file_to_print,
         label_path=label_file_to_print, # Replace with actual model result if available
-        img_save_path="after_conversion_example.png"
+        img_save_path="after_conversion_example1.png"
     )
-    print(f"Saved example images 'before_conversion_example.png' and 'after_conversion_example.png' to visualize the conversion of file {img_file_to_print}.")
+    img_file_to_print, label_file_to_print = get_sample_files(yolov8_segmentation_folder, index=2)
+    print(f"Saved example images 'before_conversion_example.png' and 'after_conversion_example1.png' to visualize the conversion of file {img_file_to_print}.")
+    visualize_bboxes_on_img(
+        img_file_to_print,
+        label_path=label_file_to_print, # Replace with actual model result if available
+        img_save_path="after_conversion_example2.png"
+    )
+    print(f"Saved 'after_conversion_example2.png' based on image {img_file_to_print}.")
+
     print("Conversion complete.")

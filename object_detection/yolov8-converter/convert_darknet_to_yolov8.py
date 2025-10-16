@@ -35,5 +35,5 @@ def create_yolo_structure(darkmark_path):
     print(f"Moved {yolo_structure[h1][img_name]} images and {yolo_structure[h1][label_name]} labels to '{root_dir_new_structure}'.")
 
 if __name__ == "__main__":
-    darkmark_folder_path = input("Enter the path to the Darkmark folder: ")
+    darkmark_folder_path = input("Enter the path to the Darkmark folder to be converted (train/valid/test): ")
     create_yolo_structure(darkmark_folder_path)
