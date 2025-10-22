@@ -4,11 +4,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-def seg_to_bbox(seg_str):
+def seg_to_bbox(seg_strings):
     # Example input: 2 0.207031 0.558594 0.208984 0.527344 0.210938 0.488281 0.214844 0.445312 0.21875 0.412109 0.222656 0.382812
-    class_id, *points = seg_str.split()
-    points = [float(p) for p in points]
-    x_min, y_min, x_max, y_max = min(points[0::2]), min(points[1::2]), max(points[0::2]), max(points[1::2])
+    x_min, y_min, x_max, y_max = float('inf'), float('inf'), float('-inf'), float('-inf')
+    for line in seg_strings:
+        line = line.strip()
+        class_id, *points = line.split()
+        points = [float(p) for p in points]
+        x_min_local, y_min_local, x_max_local, y_max_local = min(points[0::2]), min(points[1::2]), max(points[0::2]), max(points[1::2])
+        # Get largest exnclosing box
+        x_min = min(x_min, x_min_local)
+        y_min = min(y_min, y_min_local)
+        x_max = max(x_max, x_max_local)
+        y_max = max(y_max, y_max_local)
+        print(f"Processed segmentation line: {line}")
+        print(f"local bbox: min_x:{x_min_local}, y_min: {y_min_local}, x_max{x_max_local}, y_max: {y_max_local}")
+        print(f"global bbox: min_x:{x_min}, y_min: {y_min}, x_max{x_max}, y_max: {y_max}")
+
+
     # Calculate bbox center, width, height
     bw = x_max - x_min
     bh = y_max - y_min
@@ -16,7 +29,7 @@ def seg_to_bbox(seg_str):
     y_c = y_min + bh / 2
     # Format: <class> <x_center> <y_center> <width> <height> 
     bbox_info = f"{class_id} {x_c} {y_c} {bw} {bh}"
-    print(f"Segmentation: {seg_str}")
+    print(f"Segmentation: {seg_strings}")
     print(f"Converted bbox: {bbox_info}")
     return bbox_info
 
@@ -180,10 +193,12 @@ def convert_yolov8_seg_to_bbox(yolov8_segmentation_folder):
                 with open(os.path.join(cur_dir, file), 'r') as f:
                     seg_lines = f.readlines()
 
-                bbox_lines = [seg_to_bbox(line.strip()) for line in seg_lines]
+                bbox_line = seg_to_bbox(seg_lines) # assume only one instance per file for simplicity
+
+
 
                 with open(os.path.join(cur_dir, file), 'w') as f:
-                    f.write("\n".join(bbox_lines))
+                    f.write(bbox_line)
                     print(f"Converted {file} to bounding box format.")
 
         print(f"Converted segmentation labels to bounding box labels in {cur_dir}")
