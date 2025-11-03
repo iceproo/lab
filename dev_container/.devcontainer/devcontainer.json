@@ -1,22 +1,31 @@
 {
-  "name": "Python310-boltdetector",
-  "build": { 
-    "dockerfile": "Dockerfile1"
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-toolsai.jupyter"
-      ]
-    }
-  },
-  "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind"
-  ],
-  "remoteUser": "root",
-  "runArgs": [
-    "--runtime", "nvidia",
-    "--network", "host"
-  ]
+    "name": "ZED Dev Container",
+    "image": "stereolabs/zed:5.0-tools-devel-l4t-r36.4",
+    "runArgs": [
+        "--runtime=nvidia",
+        "--privileged",
+        "--network=host",
+        "--ipc=host",
+        "--pid=host",
+        "-e", "NVIDIA_DRIVER_CAPABILITIES=all",
+        "-e", "DISPLAY=${localEnv:DISPLAY}",
+        "-v", "/tmp/argus_socket:/tmp/argus_socket",
+        "-v", "/var/nvidia/nvcam/settings/:/var/nvidia/nvcam/settings/",
+        "-v", "/etc/systemd/system:/etc/systemd/system",
+        "-v", "/usr/local/zed/settings/:/usr/local/zed/settings/",
+        "-v", "/usr/local/zed/resources/:/usr/local/zed/resources/",
+        "-v", "/etc/systemd/system/zed_x_daemon.service:/etc/systemd/system/zed_x_daemon.service",
+        "-v", "/dev:/dev",
+        "-v", "/tmp:/tmp"
+
+    ],
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-python.python"
+    ],
+    "remoteUser": "root"
 }
+
